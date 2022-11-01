@@ -1,0 +1,2 @@
+## About Project
+This project is written fulfill thesis assignment for bachelor degree in Sebelas Maret University. This project is about data protection in RFID using cryptography. In this project, two algorithm will be compared, which is NTRU and ECC.
