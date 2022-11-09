@@ -1,7 +1,7 @@
 from tinyec import registry, ec
 from Crypto.Cipher import ChaCha20_Poly1305
 import secrets
-import hashlib
+import hashlib, binascii
 
 def compress(pubKey):
     return hex(pubKey.x) + hex(pubKey.y % 2)[2:]
@@ -33,7 +33,7 @@ class Ecc():
             cipher = ChaCha20_Poly1305.new(key=secret, nonce=nonce)
             cipher.update(header)
             plaintext = cipher.decrypt_and_verify(ciphertext=ciphertext, received_mac_tag=tag)
-            print("The message was: " + plaintext)
+            print(plaintext)
             return plaintext
         except (ValueError, KeyError):
             return 
@@ -51,24 +51,46 @@ class Ecc():
         pub_key = self.calculate_pub_key(priv_key=priv_key)
         return (ciphertext, nonce, tag, pub_key)
 
-    # def decrypt(self, ecrypted_msg, priv_key):
+    def decrypt(self, ecrypted_msg, priv_key):
+        (ciphertext, nonce, tag, pub_key) = ecrypted_msg
+        shared_secret = priv_key * pub_key
+        shared_secret_key = self.ecc_point_to_256_bit_key(shared_secret)
+        plaintext = self.decrypt_aed(ciphertext=ciphertext, nonce=nonce, tag=tag, secret=shared_secret_key)
+        return plaintext
 
+if __name__ == "__main__":
+    curve = Ecc()
 
+    # alicePrivKey = curve.generate_priv_key()
+    # alicePubKey = curve.calculate_pub_key(alicePrivKey)
+    # print("Alice public key:", compress(alicePubKey))
 
-curve = Ecc()
+    # bobPrivKey = curve.generate_priv_key()
+    # bobPubKey = curve.calculate_pub_key(bobPrivKey)
+    # print("Bob public key:", compress(bobPubKey))
 
-alicePrivKey = curve.generate_priv_key()
-alicePubKey = curve.calculate_pub_key(alicePrivKey)
-print("Alice public key:", compress(alicePubKey))
+    # aliceSharedKey = alicePrivKey * bobPubKey
+    # print("Alice shared key:", compress(aliceSharedKey))
 
-bobPrivKey = curve.generate_priv_key()
-bobPubKey = curve.calculate_pub_key(bobPrivKey)
-print("Bob public key:", compress(bobPubKey))
+    # bobSharedKey = bobPrivKey * alicePubKey
+    # print("Bob shared key:", compress(bobSharedKey))
 
-aliceSharedKey = alicePrivKey * bobPubKey
-print("Alice shared key:", compress(aliceSharedKey))
+    # print("Equal shared keys:", aliceSharedKey == bobSharedKey)
 
-bobSharedKey = bobPrivKey * alicePubKey
-print("Bob shared key:", compress(bobSharedKey))
+    msg = b'Text to be encrypted by ECC public key and ' \
+        b'decrypted by its corresponding ECC private key'
+    print("original msg:", msg)
+    privKey = curve.generate_priv_key()
+    pubKey = curve.calculate_pub_key(priv_key=privKey)
 
-print("Equal shared keys:", aliceSharedKey == bobSharedKey)
+    encryptedMsg = curve.encrypt(msg, pubKey)
+    encryptedMsgObj = {
+        'ciphertext': binascii.hexlify(encryptedMsg[0]),
+        'nonce': binascii.hexlify(encryptedMsg[1]),
+        'authTag': binascii.hexlify(encryptedMsg[2]),
+        'ciphertextPubKey': hex(encryptedMsg[3].x) + hex(encryptedMsg[3].y % 2)[2:]
+    }
+    print("encrypted msg:", encryptedMsgObj)
+
+    decryptedMsg = curve.decrypt(encryptedMsg, priv_key=privKey)
+    print("decrypted msg:", decryptedMsg)
