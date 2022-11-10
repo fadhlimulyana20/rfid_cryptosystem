@@ -2,6 +2,7 @@ from tinyec import registry, ec
 from Crypto.Cipher import ChaCha20_Poly1305
 import secrets
 import hashlib, binascii
+from database import get_database
 
 def compress(pubKey):
     return hex(pubKey.x) + hex(pubKey.y % 2)[2:]
@@ -90,6 +91,9 @@ if __name__ == "__main__":
         'authTag': binascii.hexlify(encryptedMsg[2]),
         'ciphertextPubKey': hex(encryptedMsg[3].x) + hex(encryptedMsg[3].y % 2)[2:]
     }
+    db = get_database()
+    col = db['ecc']
+    col.insert_one(encryptedMsgObj)
     print("encrypted msg:", encryptedMsgObj)
 
     decryptedMsg = curve.decrypt(encryptedMsg, priv_key=privKey)
