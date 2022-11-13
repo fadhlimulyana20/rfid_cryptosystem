@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from typing import Union, Any
+from tinyec import registry, ec
 
 class MessageRequest(BaseModel):
     msg: str
@@ -6,25 +8,39 @@ class MessageRequest(BaseModel):
     algorithm: str
 
 class MessageEncryptedData(BaseModel):
-    plaintext: any
-    ciphertext: any
-    g_curve: any
-    pub_key_tag: any
-    priv_key_tag: any
-    pub_key_reader: any
-    priv_key_reader: any
-    algorithm: any
+    plaintext: str
+    ciphertext: bytes
+    g_curve: ec.Curve
+    pub_key_tag: Any
+    priv_key_tag: int
+    pub_key_reader: Any
+    priv_key_reader: int
+    algorithm: str
+
+    # @validator('pub_key_tag')
+    # def pub_key_tag_exists(cls, v):
+    #     return v.pub_key_tag
+
+    # @validator('pub_key_reader')
+    # def pub_key_reader_exists(cls, v):
+    #     return v.pub_key_reader
+
+    class Config:
+        arbitrary_types_allowed = True
 
 class MessageEncryptedDataStored(BaseModel):
-    id: any
-    plaintext: any
-    ciphertext: any
-    g_curve: any
-    pub_key_tag: any
-    priv_key_tag: any
-    pub_key_reader: any
-    priv_key_reader: any
-    algorithm: any
+    id: str
+    plaintext: str
+    ciphertext: bytes
+    g_curve: ec.Curve
+    pub_key_tag: Any
+    priv_key_tag: int
+    pub_key_reader: Any
+    priv_key_reader: int
+    algorithm: str
+
+    class Config:
+        arbitrary_types_allowed = True
 
 class MessageEncryptedResponse(BaseModel):
     ciphertext: str

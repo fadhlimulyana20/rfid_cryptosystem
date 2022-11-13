@@ -44,6 +44,9 @@ class Ecc():
         return sha.digest()
 
     def encrypt(self, msg, pub_key):
+        """
+            return ciphertext, nonce, tag, pub_key, priv_key
+        """
         priv_key = self.generate_priv_key()
         shared_secret = priv_key*pub_key
         shared_secret_key = self.ecc_point_to_256_bit_key(shared_secret)
