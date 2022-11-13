@@ -2,7 +2,6 @@ from tinyec import registry, ec
 from Crypto.Cipher import ChaCha20_Poly1305
 import secrets
 import hashlib, binascii
-from database import get_database
 
 def compress(pubKey):
     return hex(pubKey.x) + hex(pubKey.y % 2)[2:]
@@ -50,10 +49,10 @@ class Ecc():
         shared_secret_key = self.ecc_point_to_256_bit_key(shared_secret)
         ciphertext, nonce, header, tag = self.encrypt_aed(msg, shared_secret_key)
         pub_key = self.calculate_pub_key(priv_key=priv_key)
-        return (ciphertext, nonce, tag, pub_key)
+        return (ciphertext, nonce, tag, pub_key, priv_key)
 
     def decrypt(self, ecrypted_msg, priv_key):
-        (ciphertext, nonce, tag, pub_key) = ecrypted_msg
+        (ciphertext, nonce, tag, pub_key, p) = ecrypted_msg
         shared_secret = priv_key * pub_key
         shared_secret_key = self.ecc_point_to_256_bit_key(shared_secret)
         plaintext = self.decrypt_aed(ciphertext=ciphertext, nonce=nonce, tag=tag, secret=shared_secret_key)
@@ -85,16 +84,40 @@ if __name__ == "__main__":
     pubKey = curve.calculate_pub_key(priv_key=privKey)
 
     encryptedMsg = curve.encrypt(msg, pubKey)
+    # print(encryptedMsg)
     encryptedMsgObj = {
         'ciphertext': binascii.hexlify(encryptedMsg[0]),
         'nonce': binascii.hexlify(encryptedMsg[1]),
         'authTag': binascii.hexlify(encryptedMsg[2]),
         'ciphertextPubKey': hex(encryptedMsg[3].x) + hex(encryptedMsg[3].y % 2)[2:]
     }
-    db = get_database()
-    col = db['ecc']
-    col.insert_one(encryptedMsgObj)
-    print("encrypted msg:", encryptedMsgObj)
+    # db = get_database()
+    # col = db['ecc']
+    # col.insert_one(encryptedMsgObj)
+    # print("encrypted msg:", encryptedMsgObj)
+
+    # Encrypt
+    ## Generate G
+    ## Generate priv and pub key reader
+    ## Generate priv and pub key tag
+    ## Encrypt message
+    ## store all in DB including plaintext
+    ## store hash(priv tag), hash(pub tag), G key and encrypted message to tag
+    
+    # Decerypt
+    ## Select all Gs in DB
+    ## Calculate the hash of all Gs
+    ## Filter hashed G = hash(Gs), if not found, break
+    ## Use G
+    ## Calculate hash(stored priv tag) and hash(stored pub tag)
+    ## Check whether hash(stored priv tag) and hash(stored pub tag) is same as hased key in tag
+    ## Calculate shared_key = priv reader * pub tag = priv tag * pub reader
+    ## If shared is the same, continue, otherwise break
+    ## Decrypt Message
+    ## check if the same
+    ## Send Response
+    
+    priv_key = curve.generate_priv_key()
 
     decryptedMsg = curve.decrypt(encryptedMsg, priv_key=privKey)
     print("decrypted msg:", decryptedMsg)
