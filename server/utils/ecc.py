@@ -7,12 +7,12 @@ def compress(pubKey):
     return hex(pubKey.x) + hex(pubKey.y % 2)[2:]
 
 class Ecc():
+    curve: registry.ec.Curve
     def __init__(self) -> None:
         self.curve = registry.get_curve('brainpoolP256r1')
 
-    # @staticmethod
-    # def generate_curve():
-    #     return registry.get_curve('brainpoolP256r1')
+    def custom_curve(self, a, b, field, name) -> None:
+        self.curve = registry.ec.Curve(a=a, b=b, field=field, name=name)
 
     def generate_priv_key(self) -> int:
         return secrets.randbelow(self.curve.field.n)
@@ -83,11 +83,25 @@ if __name__ == "__main__":
     msg = b'Text to be encrypted by ECC public key and ' \
         b'decrypted by its corresponding ECC private key'
     print("original msg:", msg)
+    print()
     privKey = curve.generate_priv_key()
     pubKey = curve.calculate_pub_key(priv_key=privKey)
 
+    s = str(pubKey.x) + str(pubKey.y) + str(pubKey.p)
+    print(hashlib.sha256(s.encode('utf-8')).hexdigest())
+    print()
+
+    print(curve.curve.name)
+    print()
+    print(curve.curve.a)
+    print()
+    print(curve.curve.b)
+    print()
+    print(str(curve.curve.field.p))
+    print()
+
     encryptedMsg = curve.encrypt(msg, pubKey)
-    # print(encryptedMsg)
+    print(encryptedMsg[1])
     encryptedMsgObj = {
         'ciphertext': binascii.hexlify(encryptedMsg[0]),
         'nonce': binascii.hexlify(encryptedMsg[1]),

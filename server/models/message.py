@@ -7,15 +7,27 @@ class MessageRequest(BaseModel):
     type: str
     algorithm: str
 
+class MessageDecryptData(BaseModel):
+    hashed_pub_key: str
+    ciphertext: str
+    nonce: bytes
+
 class MessageEncryptedData(BaseModel):
+    g_curve: Any
+    priv_key_tag: str
+    priv_key_reader: str
     plaintext: str
-    ciphertext: bytes
-    g_curve: ec.Curve
-    pub_key_tag: Any
-    priv_key_tag: int
-    pub_key_reader: Any
-    priv_key_reader: int
-    algorithm: str
+    nonce: bytes
+
+# class MessageEncryptedData(BaseModel):
+#     plaintext: str
+#     ciphertext: bytes
+#     g_curve: Any
+#     pub_key_tag: Any
+#     priv_key_tag: int
+#     pub_key_reader: Any
+#     priv_key_reader: int
+#     algorithm: str
 
     # @validator('pub_key_tag')
     # def pub_key_tag_exists(cls, v):
@@ -32,7 +44,7 @@ class MessageEncryptedDataStored(BaseModel):
     id: str
     plaintext: str
     ciphertext: bytes
-    g_curve: ec.Curve
+    g_curve: Any
     pub_key_tag: Any
     priv_key_tag: int
     pub_key_reader: Any
