@@ -18,6 +18,9 @@ class MessageUsecase():
         msg = bytes(data.msg, 'utf-8')
         encrypted_msg = ecc.encrypt(msg, reader_pub_key)
         print(encrypted_msg)
+        field_g = list()
+        for v in ecc.curve.field.g:
+            field_g.append(str(v))
         data_to_be_stored = MessageEncryptedData(
             g_curve={
                 'name': ecc.curve.name,
@@ -25,7 +28,7 @@ class MessageUsecase():
                 'b': str(ecc.curve.b),
                 'field': {
                     'p': str(ecc.curve.field.p),
-                    'g': str(ecc.curve.field.g),
+                    'g': field_g,
                     'n': str(ecc.curve.field.n),
                     'h': str(ecc.curve.field.h)
                 }
@@ -35,8 +38,13 @@ class MessageUsecase():
             plaintext=data.msg,
             nonce=encrypted_msg[1]
         )
-        result = self.message_repo.add_message(data_to_be_stored)
-        return result
+        self.message_repo.add_message(data_to_be_stored)
+        res = {
+            'ciphertext': encrypted_msg[0],
+            'pub_key': ecc.get_pub_key_str(encrypted_msg[3]),
+            'nonce': encrypted_msg[1]
+        }
+        return res
 
     def create_ecc(self, a, b, field, name):
         ecc = Ecc()
@@ -53,24 +61,31 @@ class MessageUsecase():
             a = int(c['g_curve']['a'])
             b = int(c['g_curve']['b'])
             name = c['g_curve']['name']
+            
+            field_g = list()
+            for v in c['g_curve']['field']['g']:
+                field_g.append(int(v))
+
             field = registry.ec.SubGroup(
                 p=int(c['g_curve']['field']['p']),
-                g=int(c['g_curve']['field']['g']),
+                g=field_g,
                 n=int(c['g_curve']['field']['n']),
                 h=int(c['g_curve']['field']['h'])
             )
             ecc = self.create_ecc(a, b, field, name)
             pub_key_tag = ecc.calculate_pub_key(priv_key_tag)
-            pub_key_tag_str = str(pub_key_tag.x) + str(pub_key_tag.y) + str(pub_key_tag.p)
-            pub_key_tag_hashed = hashlib.sha256(pub_key_tag_str.encode('utf-8')).hexdigest()
+            # pub_key_tag_str = str(pub_key_tag.x) + str(pub_key_tag.y) + str(pub_key_tag.p)
+            pub_key_tag_hashed = ecc.get_pub_key_str(pub_key_tag)
             if (data.hashed_pub_key == pub_key_tag_hashed):
                 msg = c
                 break
         if (msg is not None):
+            print("msg is not none")
+            print(msg)
             #Decrypt Here
             priv_key_reader = int(c['priv_key_reader'])
             enctypted_msg = (
-                data.ciphertext.encode('utf-8'),
+                data.ciphertext,
                 data.nonce,
                 pub_key_tag,
                 int(c['priv_key_tag'])

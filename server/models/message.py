@@ -9,7 +9,7 @@ class MessageRequest(BaseModel):
 
 class MessageDecryptData(BaseModel):
     hashed_pub_key: str
-    ciphertext: str
+    ciphertext: bytes
     nonce: bytes
 
 class MessageEncryptedData(BaseModel):

@@ -16,3 +16,5 @@ def test_get_all_message():
     for d in res:
         r = hashlib.sha256(str(d['_id']).encode('utf-8')).hexdigest()
         print(r)
+
+        

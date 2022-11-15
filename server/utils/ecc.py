@@ -10,6 +10,10 @@ class Ecc():
     curve: registry.ec.Curve
     def __init__(self) -> None:
         self.curve = registry.get_curve('brainpoolP256r1')
+    
+    def get_pub_key_str(self, pubKey):
+        s =hex(pubKey.x) + hex(pubKey.y % 2)[2:]
+        return hashlib.sha256(s.encode('utf-8')).hexdigest()
 
     def custom_curve(self, a, b, field, name) -> None:
         self.curve = registry.ec.Curve(a=a, b=b, field=field, name=name)
@@ -93,15 +97,17 @@ if __name__ == "__main__":
 
     print(curve.curve.name)
     print()
-    print(curve.curve.a)
+    print(type(curve.curve.a))
     print()
-    print(curve.curve.b)
+    print(type(curve.curve.b))
     print()
-    print(str(curve.curve.field.p))
+    print(curve.curve.field.g)
     print()
 
+    print(registry.ec.Curve(curve.curve.a, curve.curve.b, curve.curve.field, curve.curve.name))
+
     encryptedMsg = curve.encrypt(msg, pubKey)
-    print(encryptedMsg[1])
+    # print(encryptedMsg[1])
     encryptedMsgObj = {
         'ciphertext': binascii.hexlify(encryptedMsg[0]),
         'nonce': binascii.hexlify(encryptedMsg[1]),
@@ -111,7 +117,7 @@ if __name__ == "__main__":
     # db = get_database()
     # col = db['ecc']
     # col.insert_one(encryptedMsgObj)
-    # print("encrypted msg:", encryptedMsgObj)
+    print("encrypted msg:", encryptedMsgObj)
 
     # Encrypt
     ## Generate G
