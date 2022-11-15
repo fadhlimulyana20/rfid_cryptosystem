@@ -18,6 +18,7 @@ class MessageEncryptedData(BaseModel):
     priv_key_reader: str
     plaintext: str
     nonce: bytes
+    tag: bytes
 
 # class MessageEncryptedData(BaseModel):
 #     plaintext: str

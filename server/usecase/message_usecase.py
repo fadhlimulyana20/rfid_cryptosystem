@@ -36,7 +36,8 @@ class MessageUsecase():
             priv_key_reader=str(reader_priv_key),
             priv_key_tag=str(encrypted_msg[4]),
             plaintext=data.msg,
-            nonce=encrypted_msg[1]
+            nonce=encrypted_msg[1],
+            tag=encrypted_msg[2]
         )
         self.message_repo.add_message(data_to_be_stored)
         res = {
@@ -87,8 +88,9 @@ class MessageUsecase():
             enctypted_msg = (
                 data.ciphertext,
                 data.nonce,
+                msg['tag'],
                 pub_key_tag,
-                int(c['priv_key_tag'])
+                int(msg['priv_key_tag'])
             )
             decypted_msg = ecc.decrypt(ecrypted_msg=enctypted_msg, priv_key=priv_key_reader)
             # Check whether plaintext and plaintext in DB are the same
