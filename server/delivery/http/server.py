@@ -8,3 +8,5 @@ class HttpServer():
         self.app.register_blueprint(blueprint)
     def serve(self):
         self.app.run(debug=True)
+    def get_app(self):
+        return self.app
