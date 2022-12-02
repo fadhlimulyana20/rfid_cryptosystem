@@ -10,9 +10,15 @@ class MessageUsecase():
     def __init__(self, db: Database) -> None:
         self.message_repo = MessageRepository(db)
     
+    # def noori(self):
+    #     # Server select random curve
+    #     ecc = Ecc()
+    #     priv
+
     def encrypt_message(self, data: MessageRequest):
-        # TODO : add function to encrypt message with ECC algorithm
-        ecc = Ecc()
+        # TODO : add function to encrypt mes
+        # sage with ECC algorithm
+        ecc = Ecc(security_level=192)
         reader_priv_key = ecc.generate_priv_key()
         reader_pub_key = ecc.calculate_pub_key(reader_priv_key)
         msg = bytes(data.msg, 'utf-8')
@@ -48,7 +54,7 @@ class MessageUsecase():
         return res
 
     def create_ecc(self, a, b, field, name):
-        ecc = Ecc()
+        ecc = Ecc(security_level=192)
         ecc.custom_curve(a, b, field, name)
         return ecc
 

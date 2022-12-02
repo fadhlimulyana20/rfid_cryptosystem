@@ -8,8 +8,19 @@ def compress(pubKey):
 
 class Ecc():
     curve: registry.ec.Curve
-    def __init__(self) -> None:
-        self.curve = registry.get_curve('brainpoolP256r1')
+    sec_level = {
+        80 : "secp192r1",
+        112 : "secp224r1",
+        128 : "secp256r1",
+        192 : "secp384r1",
+        256 : "secp521r1"
+    }
+
+    def __init__(self, security_level: int) -> None:
+        curve_type = self.sec_level.get(security_level)
+        if curve_type == None :
+            raise ValueError
+        self.curve = registry.get_curve(curve_type)
     
     def get_pub_key_str(self, pubKey):
         s =hex(pubKey.x) + hex(pubKey.y % 2)[2:]
