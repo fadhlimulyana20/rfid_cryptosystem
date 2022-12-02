@@ -3,17 +3,40 @@ from repositories.message_repo import MessageRepository
 from models.message import MessageRequest, MessageEncryptedData, MessageDecryptData
 from utils.ecc import Ecc
 from tinyec import registry
-import hashlib
+import time
 
 class MessageUsecase():
     message_repo: MessageRepository
     def __init__(self, db: Database) -> None:
         self.message_repo = MessageRepository(db)
     
-    # def noori(self):
-    #     # Server select random curve
-    #     ecc = Ecc()
-    #     priv
+    def noori_init(self):
+        # Server select random curve
+        ecc = Ecc(security_level=192)
+        
+        # then server select private key and calculate public key of card reader 
+        start_time_rprk = time.time()
+        reader_priv_key = ecc.generate_priv_key()
+        time_rprk = time.time() - start_time_rprk
+
+        start_time_rpuk = time.time()
+        reader_pub_key = ecc.calculate_pub_key(reader_priv_key)
+        time_rpuk = time.time() - start_time_rpuk
+
+        # then server select private key and calculate public key of card
+        start_time_cprk = time.time()
+        card_priv_key = ecc.generate_priv_key()
+        time_cprk = time.time() - start_time_cprk
+
+        start_time_cpuk = time.time()
+        card_pub_key = ecc.calculate_pub_key(card_priv_key)
+        time_cpuk = time.time() - start_time_cpuk
+
+        print()
+        print("Reader Private Key Generation time : " + str(time_rprk) + " s")
+        print("Reader Public Key Generation time : " + str(time_rpuk) + " s")
+        print("Card Private Key Generation time : " + str(time_cprk) + " s")
+        print("Card Public Key Generation time : " + str(time_cpuk) + " s")
 
     def encrypt_message(self, data: MessageRequest):
         # TODO : add function to encrypt mes

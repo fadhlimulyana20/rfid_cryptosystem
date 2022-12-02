@@ -2,7 +2,7 @@ from usecase.message_usecase import MessageUsecase
 from database.database import get_database
 from models.message import MessageRequest, MessageDecryptData
 
-def test_ecnrypt_message():
+def test_noori_encrypt():
     db = get_database()
     data = MessageRequest(
         msg="Test",
@@ -10,26 +10,36 @@ def test_ecnrypt_message():
         type="encrypt"
     )
     mu = MessageUsecase(db)
-    res = mu.encrypt_message(data)
-    print(res)
-    assert res
+    mu.noori_init()
 
-def test_decrypt_message():
-    db = get_database()
+# def test_ecnrypt_message():
+#     db = get_database()
+#     data = MessageRequest(
+#         msg="Test",
+#         algorithm="ecc",
+#         type="encrypt"
+#     )
+#     mu = MessageUsecase(db)
+#     res = mu.encrypt_message(data)
+#     print(res)
+#     assert res
 
-    data = MessageRequest(
-        msg="Test",
-        algorithm="ecc",
-        type="encrypt"
-    )
-    mu = MessageUsecase(db)
-    res = mu.encrypt_message(data)
+# def test_decrypt_message():
+#     db = get_database()
 
-    data = MessageDecryptData(
-        ciphertext=res['ciphertext'],
-        hashed_pub_key=res['pub_key'],
-        nonce=res['nonce']
-    )
-    r = mu.decrypt_message(data)
-    print(r)
-    assert True
+#     data = MessageRequest(
+#         msg="Test",
+#         algorithm="ecc",
+#         type="encrypt"
+#     )
+#     mu = MessageUsecase(db)
+#     res = mu.encrypt_message(data)
+
+#     data = MessageDecryptData(
+#         ciphertext=res['ciphertext'],
+#         hashed_pub_key=res['pub_key'],
+#         nonce=res['nonce']
+#     )
+#     r = mu.decrypt_message(data)
+#     print(r)
+#     assert True
