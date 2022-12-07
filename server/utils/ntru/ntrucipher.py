@@ -5,6 +5,7 @@ from sympy.polys.polyerrors import NotInvertible
 from sympy import ZZ, Poly
 import logging
 from collections import Counter
+import time
 
 log = logging.getLogger("ntrucipher")
 
@@ -36,6 +37,7 @@ class NtruCipher:
         tries = 10
         while tries > 0 and (self.h_poly is None):
             f_poly = random_poly(self.N, self.N // 3, neg_ones_diff=-1)
+            print(f_poly)
             log.info("f: {}".format(f_poly))
             log.info("f coeffs: {}".format(Counter(f_poly.coeffs())))
             try:
@@ -48,23 +50,29 @@ class NtruCipher:
             raise Exception("Couldn't generate invertible f")
 
     def generate_public_key(self, f_poly, g_poly):
+        private_key_generation_time = time.time()
         self.f_poly = f_poly
         self.g_poly = g_poly
         log.debug("Trying to invert: {}".format(self.f_poly))
         self.f_p_poly = invert_poly(self.f_poly, self.R_poly, self.p)
         log.debug("f_p ok!")
+        private_key_generation_time = abs(time.time() - private_key_generation_time)
+        public_key_generation_time = time.time()
         self.f_q_poly = invert_poly(self.f_poly, self.R_poly, self.q)
         log.debug("f_q ok!")
-        log.info("f_p: {}".format(self.f_p_poly))
-        log.info("f_q: {}".format(self.f_q_poly))
-        log.debug("f*f_p mod (x^n - 1): {}".format(((self.f_poly * self.f_p_poly) % self.R_poly).trunc(self.p)))
-        log.debug("f*f_q mod (x^n - 1): {}".format(((self.f_poly * self.f_q_poly) % self.R_poly).trunc(self.q)))
+        # log.info("f_p: {}".format(self.f_p_poly))
+        # log.info("f_q: {}".format(self.f_q_poly))
+        # log.debug("f*f_p mod (x^n - 1): {}".format(((self.f_poly * self.f_p_poly) % self.R_poly).trunc(self.p)))
+        # log.debug("f*f_q mod (x^n - 1): {}".format(((self.f_poly * self.f_q_poly) % self.R_poly).trunc(self.q)))
         p_f_q_poly = (self.p * self.f_q_poly).trunc(self.q)
-        log.debug("p_f_q: {}".format(p_f_q_poly))
+        # log.debug("p_f_q: {}".format(p_f_q_poly))
         h_before_mod = (p_f_q_poly * self.g_poly).trunc(self.q)
-        log.debug("h_before_mod: {}".format(h_before_mod))
+        # log.debug("h_before_mod: {}".format(h_before_mod))
         self.h_poly = (h_before_mod % self.R_poly).trunc(self.q)
-        log.info("h: {}".format(self.h_poly))
+        public_key_generation_time = abs(time.time() - public_key_generation_time)
+        # log.info("h: {}".format(self.h_poly))
+        print("Pub Key Generation time: ", public_key_generation_time)
+        print("Priv Key Generation time: ", private_key_generation_time)
 
     def encrypt(self, msg_poly, rand_poly):
         log.info("r: {}".format(rand_poly))
